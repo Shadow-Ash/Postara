@@ -39,8 +39,17 @@ model ConnectedAccount {
 
   platform Platform
 
-  username    String
+  /// Stable provider identifier
+  /// X        -> User ID
+  /// LinkedIn -> OpenID Subject (sub)
+  providerUserId String
+
+  /// X handle (optional)
+  username String?
+
   displayName String
+
+  profileUrl String?
 
   avatar String?
 
@@ -58,8 +67,9 @@ model ConnectedAccount {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([platform, username])
+  @@unique([platform, providerUserId])
   @@index([userId])
+  @@index([platform])
 }
 
 model Content {
@@ -79,8 +89,10 @@ model Content {
 
   schedule Schedule?
 
+  /// Returned by the platform after publishing
   platformPostId String?
 
+  /// Public URL of the published post
   postUrl String?
 
   createdAt DateTime @default(now())

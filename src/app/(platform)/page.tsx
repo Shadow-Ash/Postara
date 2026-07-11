@@ -8,6 +8,12 @@ export default function DashboardPage() {
           Welcome to Postara
         </h1>
 
+        <a
+          href="/api/auth/linkedin/login"
+        >
+          Connect LinkedIn
+        </a>
+
         <p className="text-body text-secondary">
           Compose, Draft and Schedule your content.
         </p>
