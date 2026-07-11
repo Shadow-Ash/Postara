@@ -1,0 +1,140 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Platform {
+  X
+  LINKEDIN
+}
+
+enum ContentStatus {
+  DRAFT
+  SCHEDULED
+  PUBLISHED
+  FAILED
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+}
+
+model User {
+  id    String @id @default(cuid())
+  name  String
+  email String @unique
+
+  accounts ConnectedAccount[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ConnectedAccount {
+  id String @id @default(cuid())
+
+  platform Platform
+
+  username    String
+  displayName String
+
+  avatar String?
+
+  accessToken  String  @db.Text
+  refreshToken String? @db.Text
+
+  expiresAt DateTime?
+
+  userId String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  contents Content[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([platform, username])
+  @@index([userId])
+}
+
+model Content {
+  id String @id @default(cuid())
+
+  platform Platform
+
+  status ContentStatus @default(DRAFT)
+
+  text String @db.Text
+
+  accountId String
+
+  account ConnectedAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  media Media[]
+
+  schedule Schedule?
+
+  platformPostId String?
+
+  postUrl String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([accountId])
+  @@index([status])
+  @@index([platform])
+}
+
+model Media {
+  id String @id @default(cuid())
+
+  type MediaType
+
+  url String
+
+  mimeType String
+
+  size Int
+
+  width  Int?
+  height Int?
+
+  duration Int?
+
+  thumbnail String?
+
+  contentId String
+
+  content Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@index([contentId])
+}
+
+model Schedule {
+  id String @id @default(cuid())
+
+  publishAt DateTime
+
+  publishedAt DateTime?
+
+  retryCount Int @default(0)
+
+  lastAttemptAt DateTime?
+
+  errorMessage String? @db.Text
+
+  contentId String @unique
+
+  content Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([publishAt])
+}
