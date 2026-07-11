@@ -27,8 +27,6 @@ export async function GET() {
         },
     );
 
-    console.log(createLinkedInAuthUrl(state)); //log
-
     return NextResponse.redirect(
         createLinkedInAuthUrl(state),
     );

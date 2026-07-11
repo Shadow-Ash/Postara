@@ -39,12 +39,8 @@ model ConnectedAccount {
 
   platform Platform
 
-  /// Stable provider identifier
-  /// X        -> User ID
-  /// LinkedIn -> OpenID Subject (sub)
   providerUserId String
 
-  /// X handle (optional)
   username String?
 
   displayName String
@@ -64,6 +60,8 @@ model ConnectedAccount {
 
   contents Content[]
 
+  isActive Boolean @default(false)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -81,6 +79,8 @@ model Content {
 
   text String @db.Text
 
+  title String? @db.VarChar(120)
+
   accountId String
 
   account ConnectedAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
@@ -94,6 +94,8 @@ model Content {
 
   /// Public URL of the published post
   postUrl String?
+
+  lastSavedAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
