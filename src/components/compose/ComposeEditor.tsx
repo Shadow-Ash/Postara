@@ -7,9 +7,8 @@ import type {
 
 import {
     CalendarDays,
-    ImagePlus,
+    Image,
     Send,
-    Video,
 } from "lucide-react";
 
 import {
@@ -281,8 +280,8 @@ export function ComposeEditor({
                     }
                 }}
                 className={`rounded-2xl border bg-surface-container-lowest p-6 transition ${dragging
-                        ? "border-primary border-dashed bg-primary/5"
-                        : "border-outline-variant"
+                    ? "border-primary border-dashed bg-primary/5"
+                    : "border-outline-variant"
                     }`}
             >
                 {dragging && (
@@ -360,39 +359,46 @@ export function ComposeEditor({
                     <div className="flex gap-3">
                         <input
                             hidden
+                            multiple
                             type="file"
-                            accept="image/*"
+                            accept="image/*,video/*"
                             ref={fileInput}
-                            onChange={async (e) => {
-                                const file =
-                                    e.target
-                                        .files?.[0];
+                            onChange={async (event) => {
 
-                                if (!file)
+                                const files =
+                                    Array.from(
+                                        event.target.files ?? [],
+                                    );
+
+                                if (!files.length)
                                     return;
 
-                                await uploadImage(
-                                    file,
+                                await Promise.all(
+                                    files.map(uploadImage),
                                 );
+
+                                event.target.value = "";
                             }}
                         />
 
-                        <button
-                            onClick={() =>
-                                fileInput.current?.click()
-                            }
-                            className="rounded-lg border border-outline-variant p-3"
-                        >
-                            <ImagePlus
-                                size={18}
-                            />
-                        </button>
+                        <div className="flex gap-3">
 
-                        <button className="rounded-lg border border-outline-variant p-3">
-                            <Video
-                                size={18}
-                            />
-                        </button>
+                            <button
+                                onClick={() =>
+                                    fileInput.current?.click()
+                                }
+                                className="flex items-center gap-2 rounded-lg border border-outline-variant px-4 py-3 transition hover:bg-surface-container-low"
+                            >
+
+                                <Image size={18} />
+
+                                <span className="text-sm font-medium">
+                                    Add Media
+                                </span>
+
+                            </button>
+
+                        </div>
                     </div>
 
                     <div className="flex items-center gap-5">
