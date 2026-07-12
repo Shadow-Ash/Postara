@@ -66,6 +66,10 @@ export function ComposeEditor({
 
     const [saving, setSaving] =
         useState(false);
+
+    const [publishing, setPublishing] =
+        useState(false);
+
     const [dragging, setDragging] =
         useState(false);
 
@@ -148,6 +152,87 @@ export function ComposeEditor({
             );
         } finally {
             setSaving(false);
+        }
+    }
+
+    async function publish() {
+        try {
+            setPublishing(true);
+
+            let id = draftId;
+
+            // Save first if it's a new draft
+            if (!id) {
+                const response =
+                    await fetch(
+                        "/api/drafts",
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type":
+                                    "application/json",
+                            },
+                            body: JSON.stringify({
+                                title: "",
+                                text,
+                            }),
+                        },
+                    );
+
+                if (!response.ok) {
+                    throw new Error(
+                        "Unable to save draft",
+                    );
+                }
+
+                const created =
+                    await response.json();
+
+                id = created.id;
+
+                setDraftId(id);
+            }
+
+            const response =
+                await fetch(
+                    "/api/publish",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type":
+                                "application/json",
+                        },
+                        body: JSON.stringify({
+                            draftId: id,
+                        }),
+                    },
+                );
+
+            const result =
+                await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    result.message ??
+                    "Publishing failed",
+                );
+            }
+
+            alert(
+                "✅ Published successfully!",
+            );
+
+            window.location.href =
+                "/scheduled";
+        } catch (error: any) {
+            console.error(error);
+
+            alert(
+                error.message ??
+                "Publishing failed",
+            );
+        } finally {
+            setPublishing(false);
         }
     }
 
@@ -430,11 +515,19 @@ export function ComposeEditor({
                             Schedule
                         </button>
 
-                        <button className="flex items-center gap-2 rounded-lg bg-primary px-5 py-3 font-medium text-on-primary transition hover:opacity-90">
+                        <button
+                            onClick={publish}
+                            disabled={publishing}
+                            className="flex items-center gap-2 rounded-lg bg-primary px-5 py-3 font-medium text-on-primary transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
                             <Send
                                 size={18}
                             />
-                            Publish
+                            {
+                                publishing
+                                    ? "Publishing..."
+                                    : "Publish"
+                            }
                         </button>
                     </div>
                 </div>

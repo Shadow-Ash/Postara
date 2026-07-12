@@ -1,36 +1,321 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🚀 Postara
 
-## Getting Started
+> A modern, minimal and professional LinkedIn publishing platform built with **Next.js 16**, **React 19**, **Prisma 7**, and **Supabase**.
 
-First, run the development server:
+Postara helps creators, founders, developers and marketers write, manage and publish professional LinkedIn content from a distraction-free workspace.
+
+> **Current Status:** MVP (LinkedIn Personal Accounts)
+
+---
+
+# ✨ Features
+
+### 🔐 Authentication
+
+- LinkedIn OAuth 2.0 Login
+- OpenID Connect
+- Multiple LinkedIn Accounts
+- One-click Active Account Switching
+- Secure Token Storage
+- Persistent Sessions
+
+---
+
+### ✍️ Composer
+
+- Beautiful distraction-free editor
+- Auto Save
+- Character Counter
+- Draft Recovery
+- Drag & Drop Upload
+- Image Upload
+- Video Upload
+- Multiple Media Support
+- Remove Uploaded Media
+- Live Saving Status
+
+---
+
+### 📄 Draft Management
+
+- Unlimited Drafts
+- Auto Saved Drafts
+- Continue Editing
+- Duplicate Draft
+- Rename Draft
+- Delete Draft
+- Created Timestamp
+- Updated Timestamp
+- Media Preview
+
+---
+
+### 👥 Account Manager
+
+- Multiple LinkedIn Profiles
+- Active Account Indicator
+- One Click Account Switch
+- Disconnect Account
+- Add New Account
+
+---
+
+### 🎨 UI
+
+- Material 3 Inspired
+- Minimal
+- Professional
+- Responsive
+- Modern Sidebar
+- Beautiful Cards
+- Soft Color Palette
+- Smooth Animations
+
+---
+
+# 🛠 Tech Stack
+
+| Technology | Version |
+|------------|---------|
+| Next.js | 16 |
+| React | 19 |
+| TypeScript | 5 |
+| Tailwind CSS | 3 |
+| Prisma | 7 |
+| PostgreSQL | Supabase |
+| OAuth | LinkedIn OAuth 2.0 |
+| OpenID | Yes |
+
+---
+
+# 📂 Project Structure
+
+```
+src
+│
+├── app
+│   ├── api
+│   ├── compose
+│   ├── drafts
+│   └── scheduled
+│
+├── components
+│   ├── compose
+│   ├── drafts
+│   ├── layout
+│   └── ui
+│
+├── lib
+│
+└── generated
+```
+
+---
+
+# ⚙️ Environment Variables
+
+Create a `.env` file.
+
+```env
+DATABASE_URL=
+
+DIRECT_URL=
+
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+
+LINKEDIN_CLIENT_ID=
+LINKEDIN_CLIENT_SECRET=
+LINKEDIN_REDIRECT_URI=http://localhost:3000/api/auth/linkedin/callback
+```
+
+---
+
+# 📦 Installation
+
+Clone the repository
+
+```bash
+git clone https://github.com/yourusername/postara.git
+```
+
+Move into the project
+
+```bash
+cd postara
+```
+
+Install dependencies
+
+```bash
+npm install
+```
+
+Generate Prisma Client
+
+```bash
+npx prisma generate
+```
+
+Run migrations
+
+```bash
+npx prisma migrate dev
+```
+
+Start the development server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+# 🔑 LinkedIn Setup
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Create a LinkedIn Developer App.
 
-## Learn More
+Enable the following Products:
 
-To learn more about Next.js, take a look at the following resources:
+- Sign In with LinkedIn using OpenID Connect
+- Share on LinkedIn
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Configure the OAuth Redirect URL:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+http://localhost:3000/api/auth/linkedin/callback
+```
 
-## Deploy on Vercel
+Required OAuth scopes:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- openid
+- profile
+- email
+- w_member_social
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+LinkedIn uses OAuth 2.0 with OpenID Connect for authentication, and `w_member_social` is required to publish posts on behalf of an authenticated member. :contentReference[oaicite:0]{index=0}
+
+---
+
+# 📸 Current Screens
+
+- Compose
+- Drafts
+- Account Manager
+- LinkedIn Authentication
+
+---
+
+# 🚧 Roadmap
+
+## Phase 1 ✅
+
+- LinkedIn Login
+- Multiple Accounts
+- Drafts
+- Media Upload
+- Account Switching
+
+---
+
+## Phase 2 ✅
+
+- Publish to LinkedIn
+- Schedule Posts
+- Queue Manager
+- Scheduled Feed
+
+---
+
+## Phase 3 🚧
+
+- Analytics Dashboard
+- Engagement Metrics
+- Performance Charts
+
+---
+
+## Phase 4
+
+- AI Caption Generator
+- AI Rewrite
+- AI Hook Generator
+- AI Carousel Writer
+
+---
+
+## Phase 5
+
+- Team Workspace
+- Shared Drafts
+- Organizations
+- Roles & Permissions
+
+---
+
+## Phase 6
+
+- X (Twitter)
+- Bluesky
+- Threads
+- Mastodon
+
+---
+
+# 🔒 Security
+
+- OAuth 2.0
+- OpenID Connect
+- CSRF Protection
+- Secure Token Storage
+- Server-side Authentication
+- Prisma ORM
+
+---
+
+# 🖥️ Built With
+
+- Next.js App Router
+- React Server Components
+- Prisma ORM
+- PostgreSQL
+- Supabase
+- Tailwind CSS
+
+---
+
+# 🤝 Contributing
+
+Pull requests are welcome.
+
+For major changes, please open an issue first to discuss what you'd like to change.
+
+---
+
+# 📜 License
+
+MIT License
+
+---
+
+# ⭐ Support
+
+If you like this project,
+
+⭐ Star the repository
+
+🍴 Fork it
+
+🐛 Report Issues
+
+💡 Suggest Features
+
+---
+
+# 👨‍💻 Author
+
+**Shadow Ash**
+
+Building modern Web applications, AI tools and Web3 products.
+
+---
