@@ -50,19 +50,28 @@ export function ComposeEditor({
             draft?.id ?? null,
         );
 
-    const [images, setImages] =
-        useState<string[]>(
-            draft?.media.map(
-                (m) => m.url,
-            ) ?? [],
+    const [media, setMedia] =
+        useState<
+            {
+                id: string;
+                url: string;
+                type: string;
+            }[]
+        >(
+            draft?.media.map((m) => ({
+                id: m.id,
+                url: m.url,
+                type: m.type,
+            })) ?? [],
         );
 
     const [saving, setSaving] =
         useState(false);
+    const [dragging, setDragging] =
+        useState(false);
 
     const textareaRef =
         useRef<HTMLTextAreaElement>(null);
-
     const fileInput =
         useRef<HTMLInputElement>(null);
 
@@ -129,9 +138,13 @@ export function ComposeEditor({
 
             setDraftId(created.id);
 
-            setImages(
+            setMedia(
                 created.media?.map(
-                    (m: Media) => m.url,
+                    (m: Media) => ({
+                        id: m.id,
+                        url: m.url,
+                        type: m.type,
+                    }),
                 ) ?? [],
             );
         } finally {
@@ -175,13 +188,34 @@ export function ComposeEditor({
             return;
         }
 
-        const media =
+        const uploaded =
             await response.json();
 
-        setImages((previous) => [
+        setMedia((previous) => [
             ...previous,
-            media.url,
+            {
+                id: uploaded.id,
+                url: uploaded.url,
+                type: uploaded.type,
+            },
         ]);
+    }
+
+    async function removeMedia(
+        id: string,
+    ) {
+        await fetch(
+            `/api/media/${id}`,
+            {
+                method: "DELETE",
+            },
+        );
+
+        setMedia((previous) =>
+            previous.filter(
+                (m) => m.id !== id,
+            ),
+        );
     }
 
     function resize() {
@@ -204,9 +238,7 @@ export function ComposeEditor({
 
     return (
         <div className="mx-auto flex w-full max-w-5xl flex-col">
-
             <div className="mb-8 flex items-center gap-4">
-
                 <img
                     src={account.avatar ?? ""}
                     alt=""
@@ -214,22 +246,56 @@ export function ComposeEditor({
                 />
 
                 <div>
-
                     <h1 className="text-xl font-semibold">
-                        {
-                            account.displayName
-                        }
+                        {account.displayName}
                     </h1>
 
                     <p className="text-sm text-secondary">
                         {account.platform}
                     </p>
-
                 </div>
-
             </div>
 
-            <div className="rounded-2xl border border-outline-variant bg-surface-container-lowest p-6">
+            <div
+                onDragOver={(event) => {
+                    event.preventDefault();
+                    setDragging(true);
+                }}
+                onDragLeave={() =>
+                    setDragging(false)
+                }
+                onDrop={async (event) => {
+                    event.preventDefault();
+
+                    setDragging(false);
+
+                    const files =
+                        Array.from(
+                            event
+                                .dataTransfer
+                                .files,
+                        );
+
+                    for (const file of files) {
+                        await uploadImage(file);
+                    }
+                }}
+                className={`rounded-2xl border bg-surface-container-lowest p-6 transition ${dragging
+                        ? "border-primary border-dashed bg-primary/5"
+                        : "border-outline-variant"
+                    }`}
+            >
+                {dragging && (
+                    <div className="mb-6 rounded-xl border-2 border-dashed border-primary bg-primary/5 p-8 text-center">
+                        <p className="text-lg font-semibold text-primary">
+                            Drop Images or Videos
+                        </p>
+
+                        <p className="mt-2 text-sm text-secondary">
+                            Release to upload.
+                        </p>
+                    </div>
+                )}
 
                 <textarea
                     ref={textareaRef}
@@ -244,51 +310,60 @@ export function ComposeEditor({
                     className="min-h-[240px] w-full resize-none border-none bg-transparent text-lg outline-none"
                 />
 
-                {images.length > 0 && (
-
+                {media.length > 0 && (
                     <div className="mt-6 grid grid-cols-3 gap-4">
+                        {media.map((item) => (
+                            <div
+                                key={item.id}
+                                className="group relative overflow-hidden rounded-xl border"
+                            >
+                                <button
+                                    onClick={() =>
+                                        removeMedia(
+                                            item.id,
+                                        )
+                                    }
+                                    className="absolute right-2 top-2 z-20 flex h-7 w-7 items-center justify-center rounded-full bg-black/70 text-sm text-white opacity-0 transition group-hover:opacity-100"
+                                >
+                                    ✕
+                                </button>
 
-                        {images.map(
-                            (image) => (
-                                <img
-                                    key={image}
-                                    src={image}
-                                    alt=""
-                                    className="aspect-square rounded-xl border object-cover"
-                                />
-                            ),
-                        )}
-
+                                {item.type ===
+                                    "VIDEO" ? (
+                                    <video
+                                        src={item.url}
+                                        controls
+                                        className="aspect-square w-full object-cover"
+                                    />
+                                ) : (
+                                    <img
+                                        src={item.url}
+                                        className="aspect-square w-full object-cover"
+                                    />
+                                )}
+                            </div>
+                        ))}
                     </div>
-
                 )}
 
                 <div className="mb-5 mt-5 flex justify-end">
-
                     <span className="text-sm text-secondary">
-
                         {saving
                             ? "Saving..."
                             : draftId
                                 ? "Saved"
                                 : "Not Saved"}
-
                     </span>
-
                 </div>
 
                 <div className="mt-8 flex items-center justify-between">
-
                     <div className="flex gap-3">
-
                         <input
                             hidden
                             type="file"
                             accept="image/*"
                             ref={fileInput}
-                            onChange={async (
-                                e,
-                            ) => {
+                            onChange={async (e) => {
                                 const file =
                                     e.target
                                         .files?.[0];
@@ -318,17 +393,14 @@ export function ComposeEditor({
                                 size={18}
                             />
                         </button>
-
                     </div>
 
                     <div className="flex items-center gap-5">
-
                         <span
                             className={`text-sm ${remaining <
-                                    100
-                                    ? "text-red-500"
-                                    : "text-secondary"
-                                }`}
+                                100
+                                ? "text-red-500"
+                                : "text-secondary"}`}
                         >
                             {remaining}
                         </span>
@@ -358,13 +430,9 @@ export function ComposeEditor({
                             />
                             Publish
                         </button>
-
                     </div>
-
                 </div>
-
             </div>
-
         </div>
     );
 }
