@@ -5,17 +5,14 @@ import {
 } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
-import { publishTextPost } from "@/lib/linkedinPublish";
+import { publishPost } from "@/lib/linkedinPublish";
 
 export async function POST(
     request: Request,
 ) {
     try {
-        const body =
+        const { draftId } =
             await request.json();
-
-        const draftId =
-            body.draftId;
 
         if (!draftId) {
             return NextResponse.json(
@@ -52,37 +49,17 @@ export async function POST(
             );
         }
 
-        if (
-            draft.account.platform !==
-            "LINKEDIN"
-        ) {
-            return NextResponse.json(
-                {
-                    message:
-                        "Only LinkedIn publishing is supported",
-                },
-                {
-                    status: 400,
-                },
-            );
-        }
-
-        if (
-            draft.media.length > 0
-        ) {
-            return NextResponse.json(
-                {
-                    message:
-                        "Media publishing will be added next.",
-                },
-                {
-                    status: 400,
-                },
-            );
-        }
+        const images =
+            draft.media
+                .filter(
+                    (m) => m.type === "IMAGE",
+                )
+                .map(
+                    (m) => `public${m.url}`,
+                );
 
         const result =
-            await publishTextPost({
+            await publishPost({
                 accessToken:
                     draft.account
                         .accessToken,
@@ -91,7 +68,10 @@ export async function POST(
                     draft.account
                         .providerUserId,
 
-                text: draft.text,
+                text:
+                    draft.text,
+
+                imagePaths: images,
             });
 
         await prisma.content.update({
@@ -106,11 +86,12 @@ export async function POST(
                 platformPostId:
                     result.postId,
 
-                postUrl: result.postId
-                    ? `https://www.linkedin.com/feed/update/${encodeURIComponent(
-                        result.postId,
-                    )}`
-                    : null,
+                postUrl:
+                    result.postId
+                        ? `https://www.linkedin.com/feed/update/${encodeURIComponent(
+                            result.postId,
+                        )}`
+                        : null,
             },
         });
 
@@ -126,8 +107,8 @@ export async function POST(
         return NextResponse.json(
             {
                 message:
-                    error?.response?.data ??
-                    error?.message ??
+                    error.response?.data ??
+                    error.message ??
                     "Publishing failed",
             },
             {
