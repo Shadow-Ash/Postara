@@ -43,7 +43,7 @@ export default function LogoutButton() {
         <button
             onClick={logout}
             disabled={loading}
-            className="flex w-full items-center justify-center gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-sm font-medium text-on-surface transition hover:bg-error-container hover:text-error disabled:opacity-60"
+            className="flex w-full items-center justify-center gap-2 border border-outline-variant bg-surface-container-lowest px-4 py-3 text-sm font-medium text-on-surface transition hover:bg-error-container hover:text-error disabled:opacity-60"
         >
 
             {loading ? (

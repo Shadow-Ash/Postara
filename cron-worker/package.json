@@ -1,0 +1,10 @@
+{
+    "name": "postara-cron",
+    "private": true,
+    "scripts": {
+        "start": "node index.js"
+    },
+    "dependencies": {
+        "axios": "^1.11.0"
+    }
+}
