@@ -1,120 +1,191 @@
 # 🚀 Postara
 
+<p align="center">
+
 > A modern, minimal and professional LinkedIn publishing platform built with **Next.js 16**, **React 19**, **Prisma 7**, and **Supabase**.
 
 Postara helps creators, founders, developers and marketers write, manage and publish professional LinkedIn content from a distraction-free workspace.
 
-> **Current Status:** MVP (LinkedIn Personal Accounts)
+</p>
 
 ---
 
-# ✨ Features
+## ✨ Features
 
-### 🔐 Authentication
+### 🔐 Authentication & Security
 
-- LinkedIn OAuth 2.0 Login
+- LinkedIn OAuth 2.0
 - OpenID Connect
 - Multiple LinkedIn Accounts
-- One-click Active Account Switching
-- Secure Token Storage
-- Persistent Sessions
+- Active Account Switching
+- Secure HttpOnly Session Authentication
+- Password Protected Dashboard
+- Middleware Route Protection
+- Secure Server-side Authentication
+- Environment Variable Protected Access
+- CSRF-safe Authentication Flow
 
 ---
 
-### ✍️ Composer
+## ✍️ Content Composer
 
-- Beautiful distraction-free editor
-- Auto Save
+- Beautiful Distraction-free Editor
+- Live Auto Save
 - Character Counter
 - Draft Recovery
-- Drag & Drop Upload
-- Image Upload
+- Drag & Drop Uploads
+- Multi Image Upload
 - Video Upload
-- Multiple Media Support
-- Remove Uploaded Media
-- Live Saving Status
+- Remove Media
+- Upload Progress
+- Live Save Indicator
+- LinkedIn Ready Formatting
 
 ---
 
-### 📄 Draft Management
+## 📄 Drafts
 
 - Unlimited Drafts
-- Auto Saved Drafts
 - Continue Editing
+- ReEdit Draft
 - Duplicate Draft
-- Rename Draft
 - Delete Draft
-- Created Timestamp
-- Updated Timestamp
+- Last Saved Time
 - Media Preview
+- Instant Search Ready Architecture
 
 ---
 
-### 👥 Account Manager
+## 📅 Scheduling
+
+- Schedule Posts
+- Edit Scheduled Time
+- Cancel Schedule
+- Publish Immediately
+- Delete Scheduled Posts
+- Automatic Publishing
+- Exponential Retry Strategy
+- Failed Job Recovery
+- Duplicate Protection
+
+---
+
+## 🚀 Publishing
+
+- Instant Publishing
+- Scheduled Publishing
+- Multiple Images
+- Video Support
+- LinkedIn REST API
+- Automatic Upload Pipeline
+- Production-grade Publishing Service
+
+---
+
+## 👥 Account Management
 
 - Multiple LinkedIn Profiles
 - Active Account Indicator
-- One Click Account Switch
+- One-click Account Switching
 - Disconnect Account
-- Add New Account
+- Secure Logout
+- Reconnect Detection
 
 ---
 
-### 🎨 UI
+## ⚙️ Production Cron System
 
-- Material 3 Inspired
-- Minimal
-- Professional
-- Responsive
-- Modern Sidebar
-- Beautiful Cards
-- Soft Color Palette
+Designed to run reliably on Railway, Render, VPS or any server that supports HTTP Cron Jobs.
+
+Features include:
+
+- Secure Cron Secret
+- Atomic Job Claiming
+- No Duplicate Publishing
+- Exponential Backoff
+- Retry Queue
+- Stuck Job Recovery
+- Idempotent Publishing
+- Concurrent-safe Processing
+- Automatic Failure Detection
+- Processing Locks
+- Permanent Failure Handling
+- Detailed Logging
+
+---
+
+## 🎨 UI
+
+- Material Design 3 Inspired
+- Responsive Layout
+- Beautiful Sidebar
+- Minimal Interface
 - Smooth Animations
+- Professional Dashboard
+- Modern Cards
+- Soft Color Palette
 
 ---
 
 # 🛠 Tech Stack
 
 | Technology | Version |
-|------------|---------|
+|------------|----------|
 | Next.js | 16 |
 | React | 19 |
 | TypeScript | 5 |
 | Tailwind CSS | 3 |
 | Prisma | 7 |
 | PostgreSQL | Supabase |
-| OAuth | LinkedIn OAuth 2.0 |
-| OpenID | Yes |
+| LinkedIn REST API | Latest |
+| OAuth | OpenID Connect |
+| Railway Cron | Supported |
+| Vercel | Supported |
 
 ---
 
 # 📂 Project Structure
 
-```
+```text
 src
 │
 ├── app
+│   ├── (platform)
 │   ├── api
-│   ├── compose
-│   ├── drafts
-│   └── scheduled
+│   │   ├── auth
+│   │   ├── cron
+│   │   ├── drafts
+│   │   ├── login
+│   │   ├── logout
+│   │   ├── media
+│   │   ├── publish
+│   │   ├── schedule
+│   │   └── session
+│   │
+│   └── login
 │
 ├── components
 │   ├── compose
 │   ├── drafts
 │   ├── layout
-│   └── ui
+│   └── scheduled
+│
+├── generated
 │
 ├── lib
+│   ├── auth.ts
+│   ├── linkedin.ts
+│   ├── linkedinPublish.ts
+│   └── prisma.ts
 │
-└── generated
+└── middleware.ts
 ```
 
 ---
 
 # ⚙️ Environment Variables
 
-Create a `.env` file.
+Create a `.env`
 
 ```env
 DATABASE_URL=
@@ -127,6 +198,13 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 LINKEDIN_CLIENT_ID=
 LINKEDIN_CLIENT_SECRET=
 LINKEDIN_REDIRECT_URI=http://localhost:3000/api/auth/linkedin/callback
+LINKEDIN_VERSION=202603
+
+APP_PASSWORD=your_password_here
+
+SESSION_SECRET=your_random_secret
+
+CRON_SECRET=your_random_secret
 ```
 
 ---
@@ -163,7 +241,7 @@ Run migrations
 npx prisma migrate dev
 ```
 
-Start the development server
+Start development
 
 ```bash
 npm run dev
@@ -173,12 +251,19 @@ npm run dev
 
 # 🔑 LinkedIn Setup
 
-Create a LinkedIn Developer App.
+Create a LinkedIn Developer Application.
 
 Enable the following Products:
 
 - Sign In with LinkedIn using OpenID Connect
 - Share on LinkedIn
+
+Required OAuth Scopes:
+
+- openid
+- profile
+- email
+- w_member_social
 
 Configure the OAuth Redirect URL:
 
@@ -186,90 +271,113 @@ Configure the OAuth Redirect URL:
 http://localhost:3000/api/auth/linkedin/callback
 ```
 
-Required OAuth scopes:
-
-- openid
-- profile
-- email
-- w_member_social
-
-LinkedIn uses OAuth 2.0 with OpenID Connect for authentication, and `w_member_social` is required to publish posts on behalf of an authenticated member. :contentReference[oaicite:0]{index=0}
+The application authenticates users with OpenID Connect and publishes posts using the Share on LinkedIn product and the `w_member_social` permission. :contentReference[oaicite:0]{index=0}
 
 ---
 
-# 📸 Current Screens
+# 🚀 Deployment
 
-- Compose
-- Drafts
-- Account Manager
+## Frontend
+
+Recommended:
+
+- Vercel
+
+## Database
+
+- Supabase PostgreSQL
+
+## Cron
+
+Recommended:
+
+- Railway Cron
+- Railway Scheduled Jobs
+
+Example Cron URL
+
+```
+GET /api/cron/publish
+Authorization: Bearer YOUR_CRON_SECRET
+```
+
+Run every minute.
+
+---
+
+# 🔒 Security
+
+- Password Protected Dashboard
+- Middleware Authentication
+- HttpOnly Cookies
+- OAuth 2.0
+- OpenID Connect
+- Secure Session Tokens
+- Server-side Validation
+- Protected Cron Endpoint
+- Environment Secret Protection
+- Prisma ORM
+
+---
+
+# 🗺️ Roadmap
+
+## ✅ Phase 1
+
 - LinkedIn Authentication
-
----
-
-# 🚧 Roadmap
-
-## Phase 1 ✅
-
-- LinkedIn Login
 - Multiple Accounts
 - Drafts
-- Media Upload
+- Media Uploads
 - Account Switching
 
 ---
 
-## Phase 2 ✅
+## ✅ Phase 2
 
-- Publish to LinkedIn
-- Schedule Posts
-- Queue Manager
-- Scheduled Feed
+- Publishing
+- Scheduling
+- Scheduled Queue
+- Retry System
+- Production Cron
 
 ---
 
-## Phase 3 🚧
+## 🚧 Phase 3
 
 - Analytics Dashboard
+- Post Insights
 - Engagement Metrics
 - Performance Charts
 
 ---
 
-## Phase 4
+## 🚧 Phase 4
 
 - AI Caption Generator
 - AI Rewrite
 - AI Hook Generator
-- AI Carousel Writer
+- Carousel Generator
+- AI Content Calendar
 
 ---
 
-## Phase 5
+## 🚧 Phase 5
 
-- Team Workspace
+- Team Workspaces
 - Shared Drafts
 - Organizations
 - Roles & Permissions
 
 ---
 
-## Phase 6
+## 🚧 Phase 6
 
 - X (Twitter)
 - Bluesky
 - Threads
 - Mastodon
-
----
-
-# 🔒 Security
-
-- OAuth 2.0
-- OpenID Connect
-- CSRF Protection
-- Secure Token Storage
-- Server-side Authentication
-- Prisma ORM
+- Facebook
+- Instagram
 
 ---
 
@@ -281,18 +389,19 @@ LinkedIn uses OAuth 2.0 with OpenID Connect for authentication, and `w_member_so
 - PostgreSQL
 - Supabase
 - Tailwind CSS
+- LinkedIn REST API
 
 ---
 
 # 🤝 Contributing
 
-Pull requests are welcome.
+Contributions, feature requests and bug reports are welcome.
 
-For major changes, please open an issue first to discuss what you'd like to change.
+Feel free to open an Issue or submit a Pull Request.
 
 ---
 
-# 📜 License
+# 📄 License
 
 MIT License
 
@@ -300,15 +409,15 @@ MIT License
 
 # ⭐ Support
 
-If you like this project,
+If you find Postara useful,
 
 ⭐ Star the repository
 
-🍴 Fork it
+🍴 Fork the project
 
-🐛 Report Issues
+🐞 Report issues
 
-💡 Suggest Features
+💡 Suggest features
 
 ---
 
@@ -316,6 +425,4 @@ If you like this project,
 
 **Shadow Ash**
 
-Building modern Web applications, AI tools and Web3 products.
-
----
+Building modern Web Applications, AI tools and Web3 products.

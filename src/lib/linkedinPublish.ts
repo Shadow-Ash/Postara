@@ -7,66 +7,87 @@ const POSTS_API =
 const IMAGE_API =
     "https://api.linkedin.com/rest/images";
 
-const headers = (
-    token: string,
-) => ({
-    Authorization: `Bearer ${token}`,
+const LINKEDIN_VERSION =
+    process.env.LINKEDIN_VERSION ?? "202603";
 
-    "Linkedin-Version":
-        "202506",
-
-    "X-Restli-Protocol-Version":
-        "2.0.0",
-});
+function headers(token: string) {
+    return {
+        Authorization: `Bearer ${token}`,
+        "LinkedIn-Version": LINKEDIN_VERSION,
+        "X-Restli-Protocol-Version": "2.0.0",
+    };
+}
 
 async function uploadSingleImage(
     accessToken: string,
     personId: string,
     filePath: string,
 ) {
-    const initialize =
-        await axios.post(
-            `${IMAGE_API}?action=initializeUpload`,
-            {
-                initializeUploadRequest: {
-                    owner: `urn:li:person:${personId}`,
+    console.log("PERSON ID");
+    console.log(personId);
+
+    console.log("OWNER");
+    console.log(`urn:li:person:${personId}`);
+
+    try {
+        const initialize =
+            await axios.post(
+                `${IMAGE_API}?action=initializeUpload`,
+                {
+                    initializeUploadRequest: {
+                        owner: `urn:li:person:${personId}`,
+                    },
                 },
-            },
+                {
+                    headers: {
+                        ...headers(
+                            accessToken,
+                        ),
+                        "Content-Type":
+                            "application/json",
+                    },
+                },
+            );
+
+        const uploadUrl =
+            initialize.data.value.uploadUrl;
+
+        const imageUrn =
+            initialize.data.value.image;
+
+        const file =
+            fs.readFileSync(filePath);
+
+        await axios.put(
+            uploadUrl,
+            file,
             {
                 headers: {
-                    ...headers(
-                        accessToken,
-                    ),
                     "Content-Type":
-                        "application/json",
+                        "application/octet-stream",
                 },
+
+                maxBodyLength:
+                    Infinity,
             },
         );
 
-    const uploadUrl =
-        initialize.data.value.uploadUrl;
-
-    const imageUrn =
-        initialize.data.value.image;
-
-    const file =
-        fs.readFileSync(filePath);
-
-    await axios.put(
-        uploadUrl,
-        file,
-        {
-            headers: {
-                "Content-Type":
-                    "application/octet-stream",
+        return imageUrn;
+    } catch (error: any) {
+        console.log("INITIALIZE ERROR");
+        console.dir(
+            error.response?.data,
+            {
+                depth: null,
             },
+        );
 
-            maxBodyLength:
-                Infinity,
-        },
-    );
+        console.log(
+            error.response?.headers,
+        );
 
-    return imageUrn;
+        throw error;
+    }
 }
 
 async function uploadImages(
@@ -140,47 +161,81 @@ export async function publishPost({
         };
     }
 
-    const response =
-        await axios.post(
-            POSTS_API,
-            {
-                author: `urn:li:person:${personId}`,
+    let response;
 
-                commentary: text,
+    try {
 
-                visibility: "PUBLIC",
+        response =
+            await axios.post(
+                POSTS_API,
+                {
+                    author:
+                        `urn:li:person:${personId}`,
 
-                distribution: {
-                    feedDistribution:
-                        "MAIN_FEED",
+                    commentary: text,
 
-                    targetEntities: [],
+                    visibility: "PUBLIC",
 
-                    thirdPartyDistributionChannels:
-                        [],
+                    distribution: {
+                        feedDistribution:
+                            "MAIN_FEED",
+
+                        targetEntities: [],
+
+                        thirdPartyDistributionChannels:
+                            [],
+                    },
+
+                    lifecycleState:
+                        "PUBLISHED",
+
+                    isReshareDisabledByAuthor:
+                        false,
+
+                    ...(content && {
+                        content,
+                    }),
                 },
+                {
+                    headers: {
+                        ...headers(
+                            accessToken,
+                        ),
 
-                lifecycleState:
-                    "PUBLISHED",
-
-                isReshareDisabledByAuthor:
-                    false,
-
-                ...(content && {
-                    content,
-                }),
-            },
-            {
-                headers: {
-                    ...headers(
-                        accessToken,
-                    ),
-
-                    "Content-Type":
-                        "application/json",
+                        "Content-Type":
+                            "application/json",
+                    },
                 },
-            },
-        );
+            );
+
+    } catch (error: any) {
+
+        const status =
+            error.response?.status;
+
+        const code =
+            error.response?.data?.code;
+
+        if (
+            status === 401 ||
+            code ===
+            "INVALID_ACCESS_TOKEN" ||
+            code ===
+            "EXPIRED_ACCESS_TOKEN"
+        ) {
+
+            const authError =
+                new Error(
+                    "LINKEDIN_RECONNECT_REQUIRED",
+                );
+
+            throw authError;
+
+        }
+
+        throw error;
+
+    }
 
     return {
         postId:

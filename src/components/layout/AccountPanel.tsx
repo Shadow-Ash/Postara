@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { Check, Plus } from "lucide-react";
 
 import DisconnectButton from "./DisconnectButton";
+import LogoutButton from "./LogoutButton";
 
 export async function AccountPanel() {
     const accounts =
@@ -40,8 +41,8 @@ export async function AccountPanel() {
                         <div
                             key={account.id}
                             className={`rounded-xl transition-all duration-200 ${account.isActive
-                                    ? "bg-primary/5"
-                                    : "hover:bg-surface-container-low"
+                                ? "bg-primary/5"
+                                : "hover:bg-surface-container-low"
                                 }`}
                         >
 
@@ -76,6 +77,16 @@ export async function AccountPanel() {
                                             <p className="text-sm font-semibold text-on-surface">
                                                 {account.displayName}
                                             </p>
+
+                                            {account.needsReconnect && (
+
+                                                <div className="mt-1 rounded-md bg-error-container px-2 py-1 text-[11px] font-medium text-error">
+
+                                                    Reconnect LinkedIn
+
+                                                </div>
+
+                                            )}
 
                                             <p className="mt-0.5 text-xs uppercase text-on-surface-variant">
                                                 {account.platform}
@@ -141,6 +152,8 @@ export async function AccountPanel() {
                 </a>
 
             </div>
+
+            <LogoutButton />
 
         </aside>
     );

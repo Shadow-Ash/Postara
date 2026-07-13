@@ -7,8 +7,9 @@ import type {
 
 import {
     CalendarDays,
-    Image,
     Send,
+    Paperclip,
+    X,
 } from "lucide-react";
 
 import {
@@ -68,6 +69,26 @@ export function ComposeEditor({
         useState(false);
 
     const [publishing, setPublishing] =
+        useState(false);
+
+    const [showScheduler, setShowScheduler] =
+        useState(false);
+
+    const [scheduleOpen, setScheduleOpen] =
+        useState(false);
+
+    const [publishAt, setPublishAt] =
+        useState(() => {
+            const date = new Date(
+                Date.now() + 60 * 60 * 1000,
+            );
+
+            return date
+                .toISOString()
+                .slice(0, 16);
+        });
+
+    const [scheduling, setScheduling] =
         useState(false);
 
     const [dragging, setDragging] =
@@ -233,6 +254,49 @@ export function ComposeEditor({
             );
         } finally {
             setPublishing(false);
+        }
+    }
+
+    async function schedulePost() {
+        if (!draftId) {
+            await saveDraft();
+        }
+
+        const id = draftId;
+
+        if (!id) return;
+
+        setScheduling(true);
+
+        try {
+            const response =
+                await fetch(
+                    "/api/schedule",
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json",
+                        },
+
+                        body: JSON.stringify({
+                            draftId: id,
+                            publishAt,
+                        }),
+                    },
+                );
+
+            if (!response.ok) {
+                throw new Error(
+                    "Failed",
+                );
+            }
+
+            window.location.href =
+                "/scheduled";
+        } finally {
+            setScheduling(false);
         }
     }
 
@@ -475,7 +539,7 @@ export function ComposeEditor({
                                 className="flex items-center gap-2 rounded-lg border border-outline-variant px-4 py-3 transition hover:bg-surface-container-low"
                             >
 
-                                <Image size={18} />
+                                <Paperclip size={18} />
 
                                 <span className="text-sm font-medium">
                                     Add Media
@@ -485,6 +549,58 @@ export function ComposeEditor({
 
                         </div>
                     </div>
+
+                    {
+                        showScheduler && (
+                            <div className="mb-6 rounded-xl border border-outline-variant bg-surface-container-low p-5">
+
+                                <h3 className="mb-4 font-semibold">
+                                    Schedule Post
+                                </h3>
+
+                                <input
+                                    type="datetime-local"
+                                    value={publishAt}
+                                    min={
+                                        new Date()
+                                            .toISOString()
+                                            .slice(0, 16)
+                                    }
+                                    onChange={(event) =>
+                                        setPublishAt(
+                                            event.target.value,
+                                        )
+                                    }
+                                    className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-4 py-3 outline-none"
+                                />
+
+                                <div className="mt-5 flex justify-end gap-3">
+
+                                    <button
+                                        onClick={() =>
+                                            setShowScheduler(
+                                                false,
+                                            )
+                                        }
+                                        className="rounded-lg border border-outline-variant px-4 py-2"
+                                    >
+                                        Cancel
+                                    </button>
+
+                                    <button
+                                        onClick={
+                                            schedulePost
+                                        }
+                                        className="rounded-lg bg-primary px-5 py-2 text-on-primary"
+                                    >
+                                        Schedule
+                                    </button>
+
+                                </div>
+
+                            </div>
+                        )
+                    }
 
                     <div className="flex items-center gap-5">
                         <span
@@ -508,12 +624,60 @@ export function ComposeEditor({
                             Save Draft
                         </button>
 
-                        <button className="flex items-center gap-2 rounded-lg border border-outline-variant px-5 py-3 transition hover:bg-surface-container-low">
-                            <CalendarDays
-                                size={18}
-                            />
-                            Schedule
-                        </button>
+                        <div className="relative">
+
+                            <button
+                                onClick={() =>
+                                    setScheduleOpen(
+                                        !scheduleOpen,
+                                    )
+                                }
+                                className="flex items-center gap-2 rounded-lg border border-outline-variant bg-surface-container-lowest px-5 py-3 transition hover:bg-surface-container-low"
+                            >
+                                <CalendarDays size={18} />
+
+                                Schedule
+                            </button>
+
+                            {scheduleOpen && (
+
+                                <div className="absolute bottom-16 right-0 z-50 w-80 rounded-2xl border border-outline-variant bg-surface-container-lowest p-5 shadow-xl">
+
+                                    <h3 className="mb-4 font-semibold">
+                                        Schedule Post
+                                    </h3>
+
+                                    <input
+                                        type="datetime-local"
+                                        value={publishAt}
+                                        min={new Date()
+                                            .toISOString()
+                                            .slice(0, 16)}
+                                        onChange={(e) =>
+                                            setPublishAt(
+                                                e.target.value,
+                                            )
+                                        }
+                                        className="w-full rounded-xl border border-outline-variant bg-surface px-4 py-3 outline-none focus:border-primary"
+                                    />
+
+                                    <button
+                                        disabled={scheduling}
+                                        onClick={
+                                            schedulePost
+                                        }
+                                        className="mt-5 w-full rounded-xl bg-primary px-4 py-3 font-medium text-on-primary transition hover:opacity-90 disabled:opacity-50"
+                                    >
+                                        {scheduling
+                                            ? "Scheduling..."
+                                            : "Confirm Schedule"}
+                                    </button>
+
+                                </div>
+
+                            )}
+
+                        </div>
 
                         <button
                             onClick={publish}

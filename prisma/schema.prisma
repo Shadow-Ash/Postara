@@ -6,6 +6,98 @@ datasource db {
   provider = "postgresql"
 }
 
+model User {
+  id        String             @id @default(cuid())
+  name      String
+  email     String             @unique
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+  accounts  ConnectedAccount[]
+}
+
+model ConnectedAccount {
+  id               String    @id @default(cuid())
+  platform         Platform
+  providerUserId   String
+  username         String?
+  displayName      String
+  profileUrl       String?
+  avatar           String?
+  accessToken      String
+  refreshToken     String?
+  expiresAt        DateTime?
+  userId           String
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  isActive         Boolean   @default(false)
+
+  needsReconnect   Boolean   @default(false)
+
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  contents         Content[]
+
+  @@unique([platform, providerUserId])
+  @@index([userId])
+  @@index([platform])
+}
+
+model Content {
+  id             String           @id @default(cuid())
+  platform       Platform
+  status         ContentStatus    @default(DRAFT)
+  text           String
+  accountId      String
+  /// Returned by the platform after publishing
+  platformPostId String?
+  /// Public URL of the published post
+  postUrl        String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  title          String?          @db.VarChar(120)
+  lastSavedAt    DateTime?
+  account        ConnectedAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  media          Media[]
+  schedule       Schedule?
+
+  @@index([accountId])
+  @@index([status])
+  @@index([platform])
+}
+
+model Media {
+  id        String    @id @default(cuid())
+  type      MediaType
+  url       String
+  mimeType  String
+  size      Int
+  width     Int?
+  height    Int?
+  duration  Int?
+  thumbnail String?
+  contentId String
+  content   Content   @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@index([contentId])
+}
+
+model Schedule {
+  id            String    @id @default(cuid())
+  publishAt     DateTime
+  publishedAt   DateTime?
+    processing     Boolean  @default(false)
+  retryCount    Int       @default(0)
+  lastAttemptAt DateTime?
+  errorMessage  String?
+  contentId     String    @unique
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  content       Content   @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@index([publishAt])
+}
+
 enum Platform {
   X
   LINKEDIN
@@ -21,134 +113,4 @@ enum ContentStatus {
 enum MediaType {
   IMAGE
   VIDEO
-}
-
-model User {
-  id    String @id @default(cuid())
-  name  String
-  email String @unique
-
-  accounts ConnectedAccount[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model ConnectedAccount {
-  id String @id @default(cuid())
-
-  platform Platform
-
-  providerUserId String
-
-  username String?
-
-  displayName String
-
-  profileUrl String?
-
-  avatar String?
-
-  accessToken  String  @db.Text
-  refreshToken String? @db.Text
-
-  expiresAt DateTime?
-
-  userId String
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  contents Content[]
-
-  isActive Boolean @default(false)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([platform, providerUserId])
-  @@index([userId])
-  @@index([platform])
-}
-
-model Content {
-  id String @id @default(cuid())
-
-  platform Platform
-
-  status ContentStatus @default(DRAFT)
-
-  text String @db.Text
-
-  title String? @db.VarChar(120)
-
-  accountId String
-
-  account ConnectedAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
-
-  media Media[]
-
-  schedule Schedule?
-
-  /// Returned by the platform after publishing
-  platformPostId String?
-
-  /// Public URL of the published post
-  postUrl String?
-
-  lastSavedAt DateTime?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([accountId])
-  @@index([status])
-  @@index([platform])
-}
-
-model Media {
-  id String @id @default(cuid())
-
-  type MediaType
-
-  url String
-
-  mimeType String
-
-  size Int
-
-  width  Int?
-  height Int?
-
-  duration Int?
-
-  thumbnail String?
-
-  contentId String
-
-  content Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
-
-  @@index([contentId])
-}
-
-model Schedule {
-  id String @id @default(cuid())
-
-  publishAt DateTime
-
-  publishedAt DateTime?
-
-  retryCount Int @default(0)
-
-  lastAttemptAt DateTime?
-
-  errorMessage String? @db.Text
-
-  contentId String @unique
-
-  content Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([publishAt])
 }
